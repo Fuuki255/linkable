@@ -34,6 +34,7 @@
 ```cpp
 #include "iterable.h"
 
+// Iterable 継承クラス IntIterable を作成
 class IntIterable : public Iterable<IntIterable> {
 public:
   int val;
@@ -42,6 +43,7 @@ public:
     val = _val;
   }
 };
+
 
 int main(int argc, char** argv) {
   // 配列とデータを作成, * がないだけどポインタだけが使える
