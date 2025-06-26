@@ -1,8 +1,11 @@
 #ifndef _ITERABLE_HPP_
 #define _ITERABLE_HPP_
 
+#define ITERABLE_VERSION {1, 1, 0}
 
 #include <stdio.h>
+
+
 
 template<typename T>
 class IterableArray;
@@ -111,18 +114,30 @@ public:
 
 
 
+
+
 	inline IterableArray() {
 		owner = first = last = NULL;
-	}
-
-	template<typename OwnerType>
-	IterableArray(OwnerType& _owner) {
-		owner = (void*)&_owner;
 	}
 
 	~IterableArray() {
 		Clear();
 	}
+
+
+
+
+	template<typename OwnerType>
+	OwnerType* SetOwner(OwnerType* _owner) {
+  if (owner == NULL) {
+  		owner = (void*)_owner;
+  }
+  return owner;
+	}
+
+  void* GetOwner() {
+    return owner;
+  }
 	
 	
 	T* InsertBefore(T* _after, T* _before) {
