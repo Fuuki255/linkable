@@ -29,7 +29,12 @@
 
 
 
-サンプル
+## How to Install
+
+Just download the iterable.hpp and include that.
+
+
+**サンプル**
 
 ```cpp
 #include "iterable.h"
