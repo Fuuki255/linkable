@@ -15,30 +15,30 @@ class Iterable {
 	friend class IterableArray<T>;
 	
 	IterableArray<T>* parent = NULL;
-	Iterable<T>* prev = NULL;
-	Iterable<T>* next = NULL;
+	Iterable<T>* _prev = NULL;
+	Iterable<T>* _next = NULL;
 	
-	void ClearRelationship();
+	void clearRelationship();
 	
 public:
 	~Iterable() {
-		ClearRelationship();
+		clearRelationship();
 	}
 	
 //	T* operator T*() {
 //		return (T*)this;
 //	}
 
-  void* GetOwner() {
+  void* getOwner() {
     return parent->owner;
   }
 	
- 	T* Prev() {
-  		return (T*)prev;
+ 	T* prev() {
+  		return (T*)_prev;
  	}
 	
- 	T* Next() {
-  		return (T*)next;
+ 	T* next() {
+  		return (T*)_next;
  	}
 };
 
@@ -281,7 +281,7 @@ public:
 	}
 	
 	template<typename CheckType>
-	bool Contains(CheckType value) {
+	bool IsContains(CheckType value) {
 		for (T* object : *this) {
 			if (object == value) {
 				return true;
@@ -313,26 +313,24 @@ public:
 
 
 template<typename T>
-void Iterable<T>::ClearRelationship() {
+void Iterable<T>::clearRelationship() {
 	if (parent == NULL) {
 		return;
-	}
-	
-	
-	if (parent->first == this) {
-		parent->first = next;
-	}
-	if (parent->last == this) {
-		parent->last = prev;
 	}
 	
 	if (prev) {
 		prev->next = next;
 	}
+	else {
+		parent->first = _next;
+	}
+	
 	if (next) {
 		next->prev = prev;
 	}
+ else {
+		parent->last = _prev;
+	}
 }
-
 
 #endif /* _ITERABLE_HPP_ */
