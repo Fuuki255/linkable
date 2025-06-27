@@ -37,70 +37,35 @@ Just download the iterable.hpp and include that.
 **サンプル**
 
 ```cpp
-#include "iterable.h"
+#include "Includes/iterable.hpp"
+#include <string>
 
-// Iterable 継承クラス IntIterable を作成
-class IntIterable : public Iterable<IntIterable> {
+class DataRow : public Iterable<DataRow> {
 public:
-  int val;
-
-  IntIterable(int _val) {
-    val = _val;
-  }
+	int id;
+	std::string name;
+	int salary;
+	
+	DataRow(int _id, const char*  _name, int _salary) {
+		id = _id;
+		name = _name;
+		salary = _salary;
+	}
 };
 
-
 int main(int argc, char** argv) {
-  // 配列とデータを作成, * がないだけどポインタだけが使える
-  ObjectArray<IntIterable> array;
-  IntIterable* num;
+	IterableArray<DataRow> array;
+	
+	array.Add(new DataRow(0, "fuuki", 36000));
+	array.Add(new DataRow(1, "sakura", 42000));
+	array.Add(new DataRow(2, "ren", 39000));
+    
+	printf("dataset:\n");
+	for (DataRow* row : array) {
+		printf("ID: %d, Name: %s, Salary: %d\n", row->id, row->name.c_str(), row->salary);
+	}
 
-  num = array.Add(new IntIterable(1));
-
-  for (int i = 2; i < 11; i++) {
-    array.Add(new IntIterable(i));
-  }
-
-  // 配列をプリント
-  printf("test1: ");
-  for (IntIterable* val : array) {
-    printf("%d, ", val->val);
-  }
-  putchar('\n');
-  
-  // カウント
-  printf("length: %d\n", array.Length());
-
-  // 3番目と最後のデータを取る
-  printf("array[2] = %d\n", array.IndexOf(2)->val);
-  printf("array[-1] = %d\n", array.IndexOf(-1)->val);
-
-  // 要素を削除
-  delete num; // 配列から 1 を削除
-  array.DeleteIndex(7);      // 8番目を削除
-  array.DeleteIndexes(3, 5); // 4番目から6番目を削除
-
-  // データを挿入
-  num = array.IndexOf(2);  // 提示用: 3番目をゲット
-
-  array.InsertAfter(num /* オブジェクトそのままが使える */, new IntIterable(255));
-  array.InsertBefore(0 /* 0 や NULL で最初に挿入する */, new IntIterable(100));
-  array.InsertAfter(-1 /* -1 や NULL で最後に挿入する */, new IntIterable(100));
-
-
-  // 変更をプリント
-  for (IntIterable* obj : array) {
-      printf("%d, ", val->val);
-  }
-
-  // 含む
-  printd("array contains 0? %s\n", array.Contains(0) ? "true" : "false");
-  printd("array contains 100? %s\n", array.Contains(100) ? "true" : "false");
-
-  // 配列クリア（そうしなくとも自動解放される）
-  array.Clear();
-
-  return 0;
+	return 0;
 }
 ```
 
