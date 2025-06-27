@@ -53,19 +53,64 @@ public:
 	}
 };
 
-int main(int argc, char** argv) {
-	IterableArray<DataRow> array;
-	
-	array.Add(new DataRow(0, "fuuki", 36000));
-	array.Add(new DataRow(1, "sakura", 42000));
-	array.Add(new DataRow(2, "ren", 39000));
-    
-	printf("dataset:\n");
-	for (DataRow* row : array) {
-		printf("ID: %d, Name: %s, Salary: %d\n", row->id, row->name.c_str(), row->salary);
-	}
+int main() {
+    IterableArray<DataRow> array;
+    DataRow* fuuki, *sakura, *ren, *nanami, *toma;
 
-	return 0;
+    // --- 初期データ（合計5人）---
+    fuuki = array.Add(new DataRow(0, "fuuki", 36000));
+    sakura = array.Add(new DataRow(1, "sakura", 42000));
+    ren = array.Add(new DataRow(2, "ren", 39000));
+    nanami = array.Add(new DataRow(3, "nanami", 41000));
+    toma = array.Add(new DataRow(4, "toma", 38500));
+
+	// 配列プリント
+    printf("Before edits:\n");
+    for (DataRow* row : array) {
+        printf("ID: %d, Name: %s, Salary: %d\n", row->id, row->name.c_str(), row->salary);
+    }
+    
+    // --- 配列編集 ---
+
+    // sakura を削除
+    delete sakura;
+    
+    // 最後 (toma) を削除
+    delete array[-1];
+    toma = NULL;
+
+
+    // ren の前に挿入
+    array.InsertBefore(ren, new DataRow(5, "mei", 39500));
+    // インデックス 3 (nanami) のあとに挿入
+    array.InsertAfter(3,  new DataRow(6, "kai", 37000));
+    
+    // 内部移動
+    array.InsertAfter(-1, fuuki);
+    
+    // 外部移動、
+    // 設計的に同じオブジェクトは一つの配列だけ属するため、複数参考は起こりません
+    IterableArray<DataRow> array2;
+    array2.Add(fuuki);
+    
+    // 戻る
+    array.InsertBefore(0, fuuki);
+
+
+	// --- 編集後に表示 ---
+    printf("\nAfter edits:\n");
+    for (DataRow* row : array) {
+        printf("ID: %d, Name: %s, Salary: %d\n", row->id, row->name.c_str(), row->salary);
+    }
+
+    printf("\nArray Length: %d\n", array.Length());
+
+    // 自動解放前提 → Clear のみ
+    array.Clear();
+
+    printf("\nAfter clear: Length = %d\n", array.Length());
+
+    return 0;
 }
 ```
 
