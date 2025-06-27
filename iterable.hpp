@@ -28,14 +28,18 @@ public:
 //	T* operator T*() {
 //		return (T*)this;
 //	}
+
+  void* GetOwner() {
+    return parent->owner;
+  }
 	
-	T* Prev() {
-		return (T*)prev;
-	}
+ 	T* Prev() {
+  		return (T*)prev;
+ 	}
 	
-	T* Next() {
-		return (T*)next;
-	}
+ 	T* Next() {
+  		return (T*)next;
+ 	}
 };
 
 
