@@ -124,8 +124,8 @@ int main() {
 
 ## 予定アップグレード (2.0)
 
-- Iterable から TwoLink に名前付け
-- LeftLink と RightLink を追加する
+- Iterable から TwoLinkable に名前付け
+- LeftLinkable と RightLinkable を追加する
 
 ---
 
