@@ -126,6 +126,7 @@ int main() {
 
 - Iterable から TwoLinkable に名前付け
 - LeftLinkable と RightLinkable を追加する
+- 内部名先が tl (TwoLinkable), ll (LeftLinkable と rl (RightLinkable) に
 
 ---
 
