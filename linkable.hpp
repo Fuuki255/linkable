@@ -3,12 +3,71 @@
 
 #define LINKABLE_VERSION {2,0,0}
 
+#include <exception>
 
-class TLinkable {
 
+
+struct DeletingLinkableException : public std::exception {
+  const char* what() override const {
+    return "not allowed to delete LLinkable or RLinkable in object side";
+  }
 };
 
-class LLinkablez
+
+
+template<typename T> class TLinkableList;
+
+
+// TwoLinkable, a full linkable system to controll objects
+template<typename T>
+class TLinkable {
+  TLinkable<T>* tlLeft;
+  TLinkable<T>* tlRight;
+  TLinkableList<T>* tlParent;
+};
+
+
+// LeftLinkable
+template<typename T>
+class LLinkable {
+  LLinkable<T>* llLeft;
+};
+
+
+// RightLinkable
+template<typename T>
+class RLinkable {
+  RLinkable<T>* rlRight;
+};
+
+
+
+
+
+
+// TwoLinkableList
+template<typename T>
+class TLinkableList {
+  TLinkable<T>
+};
+
+
+// LeftLinkableList
+template<typename T>
+class LLinkableList {
+  
+};
+
+
+// RightLinkableList
+template<typename T>
+class RLinkableList {
+  
+};
+
+
+
+
 
 
 
