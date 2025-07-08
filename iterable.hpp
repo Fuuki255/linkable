@@ -93,19 +93,19 @@ public:
 
 
 		inline Iterator& operator--() {
-	    return Prev();
-	}
+	    	return Prev();
+		}
 
-	inline Iterator& operator--(int) {
-	    return Prev();
-	}
+		inline Iterator& operator--(int) {
+			return Prev();
+		}
 
-	inline Iterator& operator++() {
-	    return Next();
-	}
-	inline Iterator& operator++(int) {
-	    return Next();
-	}
+		inline Iterator& operator++() {
+			return Next();
+		}
+		inline Iterator& operator++(int) {
+			return Next();
+		}
 	};
 
 	Iterator begin() {
