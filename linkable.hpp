@@ -126,7 +126,6 @@ public:
                 return *this;
             }
 
-            times = times ? times : 1;
             while (times--) {
                 Prev();
             }
@@ -141,7 +140,6 @@ public:
                 return *this;
             }
 
-            times = times ? times : 1;
             while (times--) {
                 Next();
             }
