@@ -1,30 +1,15 @@
 # TLinkable - リンクオブジェクトテンプレート
 
-`linkable.hpp` の `TLinkable` はオブジェクト自身がリストノートになるテンプレートで、 `std::list` に比べてメリットは:
+`linkable.hpp` の `TLinkable` はオブジェクト自身がリストノートになるテンプレートで、 `std::list` に比べてメリットはこちらです:
 
 - 性能上昇: オブジェクト自身がリストノートなので、対応のリストノートを探す手間が減り、メモリ割り当て一回で済む
 - 自由な削除: 
-- 上位構造にアクセス: `(T)TLinkable::tlGetOwner()` や `TLinkableList::tlGetOwner()`
+- 上位構造にアクセス: 上位構造のアクセスを保存でき
+  - アクセスは `(T)TLinkable::tlGetOwner()` や `TLinkableList::tlGetOwner()`
+  - 設定は1回だけ、`TLinkableList::tlSetOwner()`
 
-クラス `Iterable` は継承でイテレーション構造をオブジェクト内に組み込むことで完璧な整合ができ、オブジェクトを `delete` するだけで配列のポインタが消え、オブジェクトから上位構造をアクセス、そしてパフォーマンスの上昇
 
-主にゲームエンジンやUIレイアウトなど、動的なオブジェクト階層管理・削除処理・イテレーションに最適です。
-
-**std::list と比べて Iterator のメリットは**
-
-- 整合性：
-  - `Iterable` を継承したクラスそのものがイテレータノードであり、配列のオブジェクト操作はオブジェクトをそのまま渡していい
-  - 上位構造のポインターを配列に設定 (SetOwner) することで下のオブジェクトが上位構造にアクセス (GetOwner) ことができる
-  - オブジェクトの削除に配列のポインターがいらない
-  - 外部ライブラリいらない
-
-- パフォーマンス：
-  - `std::list` が二回のメモリ割り当てに比べ、`Iterable` は一回だけ
-  - オブジェクトの移動や削除は std::vector のように後ろのポインターを書き直す必要ないし、std::list が先にオブジェクトのノードを探す必要もない
-
-- メモリ安全性：
-  - オブジェクトと配列は同期しているため、間違ったポインタにアクセスすることがない (std::vector や std::list と違う)
-
+ゲームエンジン、データベースやUIレイアウトなど、動的なオブジェクト階層管理・削除処理・イテレーションに最適です。
 
 **デメリット**
 
@@ -41,16 +26,16 @@ iterable.hpp をダウンロードし、`#include "iterable.hpp"` で導入す�
 **サンプル**
 
 ```cpp
-#include "Includes/iterable.hpp"
+#include "linkable.hpp"
 #include <string>
 
-class DataRow : public Iterable<DataRow> {
+class DataRow : public TLinkable {
 public:
 	int id;
 	std::string name;
 	int salary;
 	
-	DataRow(int _id, const char*  _name, int _salary) {
+	DataRow(int _id, const char* _name, int _salary) {
 		id = _id;
 		name = _name;
 		salary = _salary;
