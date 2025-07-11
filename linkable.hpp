@@ -8,8 +8,7 @@
 
 
 
-
-
+#ifndef _NO_TWOLINKABLE_
 
 class TLinkable;
 template<typename Object, typename Owner = void> class TLinkableList;
@@ -59,8 +58,8 @@ class TLinkableList {
 private:
     friend class TLinkable;
 
-    TLinkable* tlFirst = NULL, *tlLast = NULL;
-    Owner* tlOwner = NULL;
+    TLinkable* tlFirst, *tlLast;
+    Owner* tlOwner;
 
 public:
     class Iterator {
@@ -158,6 +157,31 @@ public:
     }
 
 
+
+    TLinkableList() {
+        tlFirst = tlLast = NULL;
+        tlOwner = NULL;
+    }
+
+    TLinkableList(std::initializer_list<Object*> objects) {
+        tlFirst = tlLast = NULL;
+        tlOwner = NULL;
+        
+        for (Object* o : objects) {
+            tlAdd(o);
+        }
+    }
+
+    template<typename T>
+    TLinkableList(std::initializer_list<T> values) {
+        tlFirst = tlLast = NULL;
+        tlOwner = NULL;
+        
+        for (const T& v : values) {
+            tlAdd(new Object(v));
+        }
+    }
+
     virtual ~TLinkableList() {
         tlClear();
     }
@@ -204,23 +228,23 @@ public:
         return total;
     }
 
-    bool tlIsContains(Object* check) const {
-        for (Object* object : *this) {
+    Object* tlGetEqual(Object* object) const {
+        for (Object* check : *this) {
             if (*object == *check) {
-                return true;
+                return check;
             }
         }
-        return false;
+        return NULL;
     }
 
     template<typename T>
-    bool tlIsContains(T value) const {
-        for (Object* object : *this) {
-            if (*object == value) {
-                return true;
+    Object* tlGetEqual(T value) const {
+        for (Object* check : *this) {
+            if (*check == value) {
+                return check;
             }
         }
-        return false;
+        return NULL;
     }
 
 
@@ -367,12 +391,303 @@ void* TLinkable::tlGetOwner() const {
 }
 
 
+#define TwoLinkable TLinkable
+#define TwoLinkableList TLinkableList
+
+
+#endif // _TWOLINKABLE_
+
+
+
+
+
+#ifndef _NO_RIGHT_LINKABLE_
+
+// Right-Linkable Queue
+template<typename Object> class RLinkableQueue;
+
+
+// Right-Linkable
+class RLinkable {
+    template<typename Object> friend class RLinkableQueue;
+
+    RLinkable* rlRight = NULL;
+    bool rlLocked = false;
+
+public:
+#ifndef NODEBUG
+    virtual ~RLinkable() noexcept(false) {
+        if (rlLocked) {
+            throw std::runtime_error("couldn't delete RLinkable having parent!");
+        }
+    }
+#else
+    virtual ~RLinkable() {}
+#endif
+};
+
+
+
+template<typename Object>
+class RLinkableQueue {
+public:
+    friend class RLinkable;
+
+    RLinkable* rlFirst = NULL, *rlLast = NULL;
+
+public:
+    class Iterator {
+        friend class RLinkableQueue;
+
+        Iterator& Next() {
+            now = next;
+            next = now ? now->rlRight : NULL;
+            return *this;
+        }
+
+        Iterator(RLinkable* _now, RLinkable* _next) {
+            now = _now;
+            next = _next;
+        }
+    public:
+        RLinkable* now, *next;
+
+        Iterator(RLinkable* object) {
+            now = object;
+            next = now ? now->rlRight : NULL;
+        }
+
+        Iterator& operator++() {
+            return Next();
+        }
+
+        Iterator& operator++(int) {
+            return Next();
+        }
+
+        bool operator!=(Iterator& other) {
+            return now != other.now;
+        }
+
+        Object* operator*() {
+            return (Object*)now;
+        }
+    };
+
+    Iterator begin() {
+        return Iterator(rlFirst, rlFirst ? rlFirst->rlRight : NULL);
+    }
+
+    Iterator end() {
+        return Iterator(NULL, NULL);
+    }
+
+    
+
+    RLinkableQueue() {}
+
+    RLinkableQueue(std::initializer_list<Object*> objects) {
+        for (Object* o : objects) {
+            rlAddLast(o);
+        }
+    }
+
+    template<typename T>
+    RLinkableQueue(std::initializer_list<T> values) {
+        for (const T& v : values) {
+            rlAddLast(new Object(v));
+        }
+    }
+
+    ~RLinkableQueue() {
+        for (Object* object : *this) {
+            ((RLinkable*)object)->rlLocked = false;
+            delete object;
+        }
+    }
+
+
+
+    RLinkableQueue<Object>& rlClear() {
+        for (Object* object : *this) {
+            ((RLinkable*)object)->rlLocked = false;
+            delete object;
+        }
+        rlFirst = rlLast = NULL;
+        return *this;
+    }
+
+    Object* rlAddFirst(Object* object) {
+        RLinkable* linkable = (RLinkable*)object;
+        
+        if (linkable->rlLocked) {
+            throw std::runtime_error("couldn't add RLinkable having parent!");
+        }
+        linkable->rlLocked = true;
+
+        if (rlFirst) {
+            linkable->rlRight = rlFirst;
+        }
+        else {
+            rlLast = linkable;
+        }
+        rlFirst = linkable;
+        return object;
+    }
+
+    Object* rlAddLast(Object* object) {
+        RLinkable* linkable = (RLinkable*)object;
+        
+        if (linkable->rlLocked) {
+            throw std::runtime_error("couldn't add RLinkable having parent!");
+        }
+        linkable->rlLocked = true;
+
+        if (rlLast) {
+            rlLast->rlRight = linkable;
+        }
+        else {
+            rlFirst = linkable;
+        }
+        rlLast = linkable;
+        return object;
+    }
+
+    
+    
+    Object* rlGetFirst() const {
+        return rlFirst;
+    }
+
+    Object* rlGetLast() const {
+        return rlLast;
+    }
+
+
+
+    Object* rlPopFirst() {
+        RLinkable* object = rlFirst;
+        if (object) {
+            rlFirst = object->rlRight;
+            object->rlLocked = false;
+        }
+        return (Object*)object;
+    }
+
+
+
+    int rlLength() const {
+        int total = 0;
+        for (Iterator iter = begin(); *iter; iter++) {
+            total++;
+        }
+        return total;
+    }
+
+    Object* rlGetEqual(Object* object) const {
+        for (Object* check : *this) {
+            if (*object == *check) {
+                return check;
+            }
+        }
+        return NULL;
+    }
+
+    template<typename T>
+    Object* rlGetEqual(T* value) const {
+        for (Object* check : *this) {
+            if (*check == value) {
+                return check;
+            }
+        }
+        return NULL;
+    }
+};
+
+
+#define RightLinkable RLinkable
+#define RightLinkableQueue RLinkableQueue
+
+
+#endif // _RIGHT_LINKABLE_
 
 
 
 
 
 
+
+
+#if !defined(_NO_TWO_LINKABLE_) || !defined(_NO_TWO_LINKABLE_BASIC_)
+
+#include <string>
+
+
+template<typename T>
+class NumberTLinkable : public TLinkable {
+public:
+    T number;
+
+    NumberTLinkable(T _number = 0) {
+        number = _number;
+    }
+
+    operator T() const {
+        return number;
+    }
+};
+
+typedef NumberTLinkable<int> IntTLinkable;
+typedef NumberTLinkable<long> LongTLinkable;
+typedef NumberTLinkable<float> FloatTLinkable;
+typedef NumberTLinkable<double> DoubleTLinkable;
+
+
+
+class StringTLinkable : public TLinkable, public std::string {
+public:
+    StringTLinkable(std::string s) : std::string(s) {}
+    StringTLinkable(const char* s) : std::string(s) {}
+};
+
+
+#endif //_TWO_LINKABLE_BASIC_
+
+
+
+
+#if !defined(_NO_RIGHT_LINKABLE_) || !defined(_NO_RIGHT_LINKABLE_BASIC_)
+
+template<typename T>
+class NumberRLinkable : public RLinkable {
+public:
+    T number;
+
+    NumberRLinkable(T _number = 0) {
+        number = _number;
+    }
+
+    operator T() const {
+        return number;
+    }
+};
+
+typedef NumberRLinkable<int> IntRLinkable;
+typedef NumberRLinkable<long> LongRLinkable;
+typedef NumberRLinkable<float> FloatRLinkable;
+typedef NumberRLinkable<double> DoubleRLinkable;
+
+
+
+class StringRLinkable : public RLinkable, public std::string {
+public:
+    StringRLinkable(std::string s) : std::string(s) {}
+    StringRLinkable(const char* s) : std::string(s) {}
+};
+
+
+
+#endif // _RIGHT_LINKABLE_BASIC_
 
 
 #endif // _LINKABLE_HPP_
