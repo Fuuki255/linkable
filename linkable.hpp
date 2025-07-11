@@ -405,7 +405,30 @@ void* TLinkable::tlGetOwner() const {
 template<typename Object> class RLinkableQueue;
 
 
-// Right-Linkable
+/* Right-Linkable、FIFO / FILO に特化するリンク構造
+
+FIFO 1:
+addLast();
+object = getFirst();
+deleteFirst();
+
+FIFO 2:
+addLast();
+object = popFirst();
+delete object;
+
+
+FILO 1:
+addFirst();
+object = getFirst();
+deleteFirst();
+
+FILO 2:
+addFirst();
+object = popFirst();
+delete object;
+
+*/
 class RLinkable {
     template<typename Object> friend class RLinkableQueue;
 
@@ -570,6 +593,11 @@ public:
             object->rlLocked = false;
         }
         return (Object*)object;
+    }
+
+    RLinkableQueue<Object>& rlDeleteFirst() {
+        delete (Object*)rlPopFirst();
+        return *this;
     }
 
 
