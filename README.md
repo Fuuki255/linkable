@@ -31,91 +31,157 @@ iterable.hpp をダウンロードし、`#include "iterable.hpp"` で導入す�
 
 class DataRow : public TLinkable {
 public:
-	int id;
-	std::string name;
-	int salary;
-	
-	DataRow(int _id, const char* _name, int _salary) {
-		id = _id;
-		name = _name;
-		salary = _salary;
-	}
+        int id;
+        std::string name;
+        int salary;
+
+        DataRow(int _id, const char*  _name, int _salary) {
+                id = _id;
+                name = _name;
+                salary = _salary;
+        }
+
+    bool operator==(const char* find) {
+        return name.compare(find) == 0;
+    }
 };
 
-int main() {
-    IterableArray<DataRow> array;
-    DataRow* fuuki, *sakura, *ren, *nanami, *toma;
-
-    // --- 初期データ（合計5人）---
-    fuuki = array.Add(new DataRow(0, "fuuki", 36000));
-    sakura = array.Add(new DataRow(1, "sakura", 42000));
-    ren = array.Add(new DataRow(2, "ren", 39000));
-    nanami = array.Add(new DataRow(3, "nanami", 41000));
-    toma = array.Add(new DataRow(4, "toma", 38500));
-
-	// 配列プリント
-    printf("Before edits:\n");
-    for (DataRow* row : array) {
+void printDataRow(TLinkableList<DataRow>& mylist) {
+    for (DataRow* row : mylist) {
         printf("ID: %d, Name: %s, Salary: %d\n", row->id, row->name.c_str(), row->salary);
     }
-    
-    // --- 配列編集 ---
+}
 
-    // sakura を削除
-    delete sakura;
-    
-    // 最後 (toma) を削除
-    delete array[-1];
+int main() {
+    DataRow* fuuki, *sakura, *ren, *nanami, *toma;
+
+    // --- 初期化（合計5人）---
+
+    // 配列初期化
+    TLinkableList<DataRow> mylist;
+
+    // データ追加
+    fuuki = mylist.tlAdd(new DataRow(0, "fuuki", 36000));
+    sakura = mylist.tlAdd(new DataRow(1, "sakura", 42000));
+    ren = mylist.tlAdd(new DataRow(2, "ren", 39000));
+    nanami = mylist.tlAdd(new DataRow(3, "nanami", 41000));
+    toma = mylist.tlAdd(new DataRow(4, "toma", 38500));
+
+    // 表示
+    printf("Before edits:\n");
+    printDataRow(mylist);
+
+
+    // --- 削除処理 ---
+
+    delete sakura;      // sakura を削除
+    delete mylist[-1];  // 最後にいる toma を削除
     toma = NULL;
 
 
-    // ren の前に挿入
-    array.InsertBefore(ren, new DataRow(5, "mei", 39500));
-    // インデックス 3 (nanami) のあとに挿入
-    array.InsertAfter(3,  new DataRow(6, "kai", 37000));
-    
+    // --- 移動処理 ---
+
+    // 新しいデータの挿入
+    mylist.tlInsertBefore(ren, new DataRow(5, "mei", 39500));   // 新しいデータを ren の前に挿入
+    mylist.tlInsertAfter(3,  new DataRow(6, "kai", 37000));     // 3番目の nanami のあとに挿入
+
     // 内部移動
-    array.InsertAfter(-1, fuuki);
-    
+    mylist.tlInsertAfter(-1, fuuki);    // fuuki を一番後ろに移動する
+
     // 外部移動、
-    // 設計的に同じオブジェクトは一つの配列だけ属するため、複数参考は起こりません
-    IterableArray<DataRow> array2;
-    array2.Add(fuuki);
-    
-    // 戻る
-    array.InsertBefore(0, fuuki);
+    // 同じオブジェクトは一つの配列だけ属するため、移動すると元の配列の最高がなくなる
+    TLinkableList<DataRow> mylist2;
+    mylist2.tlAdd(fuuki);
 
+    mylist.tlInsertBefore(0, fuuki);    // mylist2 から mylist に戻る
 
-	// --- 編集後に表示 ---
+    // オブジェクトを外す
+    mylist.tlPop(0);        // fuuki は配列から外す
+    delete fuuki;           // 自動解放されなくなるため、delete が必要
+
+        // 編集後の表示
     printf("\nAfter edits:\n");
-    for (DataRow* row : array) {
-        printf("ID: %d, Name: %s, Salary: %d\n", row->id, row->name.c_str(), row->salary);
-    }
+    printDataRow(mylist);
 
-    printf("\nArray Length: %d\n", array.Length());
+    // --- その他 ---
 
-    // 自動解放前提 → Clear のみ
-    array.Clear();
+    // オブジェクト数を取得
+    printf("\nArray Length: %d\n", mylist.tlLength());
 
-    printf("\nAfter clear: Length = %d\n", array.Length());
+    // オブジェクトが含まれているかのチェック、クラスに設定すれば任意のタイプでチェックすることができる
+    printf("Is nanami in mylist? %s\n", mylist.tlIsContains("nanami") ? "true" : "false");
+
+    // 自動解放があるが、tlClear で手動解放もできる
+    mylist.tlClear();
+
+    printf("\nAfter clear: Length = %d\n", mylist.tlLength());      // 解放されたら空き配列になる、続いて使用可能
 
     return 0;
 }
 ```
 
-推奨用途
+**オブジェクト操作**
 
-- UIレイアウトツリーやエンティティ階層
-- 動的な削除と再配置が頻繁なゲーム内オブジェクトの管理
-- ツリー/リスト構造を持つ管理機構の基盤実装
+- 作成や削除：
+  - `new YourLinkable`
+  - `delete YourLinkable`
+
+- 独立化： `YourLinkable* tlUnlink()`、解放するとこのメソッドが自動的に実行する
+
+- 前/後オブジェクト：
+  - `YourLinkable* tlPrev()`
+  - `YourLinkable* tlNext()`
+
+- 上位構造アクセス： `void* tlGetOwner()`
+
+
+**配列操作**
+
+- 作成と削除：
+  - `LinkableList<YourLinkable, OwnerType> yourList`
+  - 自動解放、または `TLinkable& tlClear()`
+
+- 追加と挿入：
+  - `YourLinkable* ltAdd(YourLinkable* object)`
+  - `YourLinkable* tlInsertBefore(YourLinkable* pos, YourLinkable* object)`
+  - `YourLinkable* tlInsertAfter(YourLinkable* pos, YourLinkable* object)`
+  - オブジェクトごと一つのリストだけに属する、リスト入れたオブジェクトがほかのリストに移動するとそのリストから消えます
+
+- ループ：
+  - `for (YourLinkable* object : yourList) {}`
+  - 途中にオブジェクトが削除されても影響しません
+
+- 全てのオブジェクトを削除： `TLinkable& tlClear()`
+
+- 数える： `int tlLength()`
+
+- 含めているかの確認：
+  - `bool tlIsContains(AnyType value)`
+  - `bool tlIsContains(YourLinkable* object)`
+
 
 ---
 
-## 予定アップグレード (2.0)
+## 予定アップグレード
 
-- Iterable から TwoLinkable に名前付け
-- LeftLinkable と RightLinkable を追加する
-- 内部名先が tl (TwoLinkable), ll (LeftLinkable と rl (RightLinkable) に
+- `IntLinkable`, `StringLinkable`, などのベースクラスを作成
+
+
+## ログ
+
+**linkable.hpp (2.0.0)**
+
+- `Iterable<T>` から `Linkable`, `IterableArray<T>` から `LinkableList<Object, Owner = void>`
+- `Linkable` が多重継承することができるようになった
+- メソッド名先 tl 付き、継承クラスからテンプレートメソッドが分けやすくなる
+- `bool TLinkableList::tlIsContains(T value)` で複数チェックメソッドを追加
+
+
+**iterable.hpp (1.0.0)**
+
+- `Iterable<T>`、`IterableArray<T>` 作成
+- 基本メソッド追加
+  
 
 ---
 
