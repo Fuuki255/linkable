@@ -1,7 +1,7 @@
 #ifndef _LINKABLE_HPP_
 #define _LINKABLE_HPP_
 
-#define LINKABLE_VERSION {2,0,0}
+#define LINKABLE_VERSION {3,0,0}
 
 #include <exception>
 #include <iostream>
@@ -616,7 +616,7 @@ public:
 
 
 
-#if !defined(_NO_TWO_LINKABLE_) || !defined(_NO_TWO_LINKABLE_BASIC_)
+#if !defined(_NO_TWO_LINKABLE_) || !defined(_NO_TWO_LINKABLE_EXPAND_)
 
 #include <string>
 
@@ -649,12 +649,12 @@ public:
 };
 
 
-#endif //_TWO_LINKABLE_BASIC_
+#endif //_TWO_LINKABLE_EXPAND_
 
 
 
 
-#if !defined(_NO_RIGHT_LINKABLE_) || !defined(_NO_RIGHT_LINKABLE_BASIC_)
+#if !defined(_NO_RIGHT_LINKABLE_) || !defined(_NO_RIGHT_LINKABLE_EXPAND_)
 
 template<typename T>
 class NumberRLinkable : public RLinkable {
@@ -685,7 +685,7 @@ public:
 
 
 
-#endif // _RIGHT_LINKABLE_BASIC_
+#endif // _RIGHT_LINKABLE_EXPAND_
 
 
 #endif // _LINKABLE_HPP_

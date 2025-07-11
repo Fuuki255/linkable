@@ -1,31 +1,37 @@
 # TLinkable - リンクオブジェクトテンプレート
 
-`linkable.hpp` の `TLinkable` はオブジェクト自身がリストノートになるテンプレートで、 `std::list` に比べてメリットはこちらです:
+オブジェクト自身がリストノートになるテンプレートで、より速い配列操作ができる、ダイナミックなオブジェクトに適している
 
-- 性能： オブジェクト自身がリストノートなので、対応のリストノートを探す手間が減り、メモリ割り当て一回で済む
 
+| バージョン   | 3.0.0      |
+| ------------ | ---------- |
+| プログラマー | ふうき255  |
+| 日付         | 2025/07/12 |
+
+
+## インストール
+
+iterable.hpp をダウンロードし、`#include "iterable.hpp"` で導入すれば使用可能、コンパイルパラメーターが追加しない
+
+
+## メリット
+
+- 性能： オブジェクトから直接操作でき、リストノートを探す手間が減る、メモリ割り当て数が一回で済む
 - 自由： 配列側に気にせず、自由に移動や削除できる
-
-- 上位構造にアクセス： 上位構造のアクセスを保存でき
-  - アクセスは `(T)TLinkable::tlGetOwner()` や `TLinkableList::tlGetOwner()`
-  - 設定は1回だけ、`TLinkableList::tlSetOwner()`
-
+- 上位構造にアクセス： オブジェクトから上位構造にアクセスでき。アクセスには `(T)yourLinkable.tlGetOwner()` や `Owner* yourList.tlGetOwner()`。設定は1回だけ、`Owner* yourList.tlSetOwner(Owner* owner)`
 
 ゲームエンジン、データベースやUIレイアウトなど、動的なオブジェクト階層管理・削除処理・イテレーションに最適です。
 
-**デメリット**
+
+## デメリット
 
 - 各オブジェクトは 同時に1つの ObjectArray にしか所属できません (std::list, std::vector, ... に影響しない)
 - Iterable 継承オブジェクトのシングルポインタだけが使える
 
 
+---
 
-## インストール
-
-iterable.hpp をダウンロードし、`#include "iterable.hpp"` で導入すれば使用可能、コンパイルは以前のままでいい
-
-
-**サンプル**
+## サンプル
 
 ```cpp
 #include "linkable.hpp"
@@ -111,7 +117,7 @@ int main() {
     printf("\nArray Length: %d\n", mylist.tlLength());
 
     // オブジェクトが含まれているかのチェック、クラスに設定すれば任意のタイプでチェックすることができる
-    printf("Is nanami in mylist? %s\n", mylist.tlIsContains("nanami") ? "true" : "false");
+    printf("Is nanami in mylist? %s\n", mylist.tlGetEqual("nanami") ? "true" : "false");
 
     // 自動解放があるが、tlClear で手動解放もできる
     mylist.tlClear();
@@ -122,68 +128,94 @@ int main() {
 }
 ```
 
-**オブジェクト操作**
+---
 
-- 作成や削除：
-  - `new YourLinkable`
-  - `delete YourLinkable`
+## オブジェクト操作
 
-- 独立化： `YourLinkable* tlUnlink()`、解放するとこのメソッドが自動的に実行する
+### 作成や削除
 
-- 前/後オブジェクト：
-  - `YourLinkable* tlPrev()`
-  - `YourLinkable* tlNext()`
+`new YourLinkable`
+`delete YourLinkable`
 
-- 上位構造アクセス： `void* tlGetOwner()`
+### 独立化
+
+`YourLinkable* tlUnlink()`
+
+解放するとこのメソッドが自動的に実行する
+
+### 前/後オブジェクト
+
+`YourLinkable* tlPrev()`
+`YourLinkable* tlNext()`
+
+### 上位構造アクセス
+
+`void* tlGetOwner()`
 
 
-**配列操作**
+## 配列操作
 
-- 作成と削除：
-  - `LinkableList<YourLinkable, OwnerType> yourList`
-  - 自動解放、または `TLinkable& tlClear()`
+### 作成と削除：
 
-- 追加と挿入：
-  - `YourLinkable* ltAdd(YourLinkable* object)`
-  - `YourLinkable* tlInsertBefore(YourLinkable* pos, YourLinkable* object)`
-  - `YourLinkable* tlInsertAfter(YourLinkable* pos, YourLinkable* object)`
-  - オブジェクトごと一つのリストだけに属する、リスト入れたオブジェクトがほかのリストに移動するとそのリストから消えます
+`LinkableList<YourLinkable, OwnerType> yourList`
 
-- ループ：
-  - `for (YourLinkable* object : yourList) {}`
-  - 途中にオブジェクトが削除されても影響しません
+自動解放、または `TLinkable& tlClear()`
 
-- 全てのオブジェクトを削除： `TLinkable& tlClear()`
+### 追加と挿入：
 
-- 数える： `int tlLength()`
+`YourLinkable* ltAdd(YourLinkable* object)`
+`YourLinkable* tlInsertBefore(YourLinkable* pos, YourLinkable* object)`
+`YourLinkable* tlInsertAfter(YourLinkable* pos, YourLinkable* object)`
 
-- 含めているかの確認：
-  - `bool tlIsContains(AnyType value)`
-  - `bool tlIsContains(YourLinkable* object)`
+オブジェクトごと一つのリストだけに属する、リスト入れたオブジェクトがほかのリストに移動するとそのリストから消えます
 
+### ループ：
+
+`for (YourLinkable* object : yourList) {}`
+
+途中にオブジェクトが削除されても影響しません
+
+### 全てのオブジェクトを削除
+
+`TLinkable& tlClear()`
+
+### 数える
+
+`int tlLength()`
+
+### 同じものをゲット
+
+`YourLinkable* tlGetEqual(AnyType value)`
+`YourLinkable* tlGetEqual(YourLinkable* object)`
+
+`YourLinkable::operator==()` を編集することで望むをゲットできる
 
 ---
 
 ## 予定アップグレード
 
-- `IntLinkable`, `StringLinkable`, などのベースクラスを作成
-
+なし
 
 ## ログ
 
-**linkable.hpp (2.0.0)**
+### linkable.hpp (3.0.0)
 
-- `Iterable<T>` から `Linkable`, `IterableArray<T>` から `LinkableList<Object, Owner = void>`
-- `Linkable` が多重継承することができるようになった
+- 一方向リンク式テンプレート `RLinkable` を追加、機能が限定されたが，より高いスピードが得られる
+- `TLinkableList<>` や `RLinkableQueue<>` が C++ 初期化配列で構成できるようになった
+- `bool IsContains(T)` から `YourLinkable* GetEqual(T)` になる
+- `TLinkable` と `RLinkable` のベース拡張として、`IntLinkable`, `FLoatLinkable`, `StringLinkable` などを追加
+
+### linkable.hpp (2.0.0)
+
+- `Iterable<T>` から `TLinkable`, `IterableArray<T>` から `TLinkableList<Object, Owner = void>`
+- `TLinkable` が多重継承することができるようになった
 - メソッド名先 tl 付き、継承クラスからテンプレートメソッドが分けやすくなる
 - `bool TLinkableList::tlIsContains(T value)` で複数チェックメソッドを追加
 
-
-**iterable.hpp (1.0.0)**
+### iterable.hpp (1.0.0)
 
 - `Iterable<T>`、`IterableArray<T>` 作成
 - 基本メソッド追加
-  
 
 ---
 
